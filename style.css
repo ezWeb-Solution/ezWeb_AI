@@ -1,48 +1,204 @@
-/* Custom CSS */
+/* General styles */
 
 body {
-  background-color: #1D1D1D;
-  color: #FFFFFF;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: #FFFFFF;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-iframe {
-  width: 100%;
-  height: calc(100vh - 56px);
-}
+/* Header styles */
 
-@media (max-width: 767px) {
-  iframe {
-    height: calc(100vh - 106px);
-  }
-}
-
-/* Custom CSS for subframe_x */
-
-#subframe_x {
+header {
+  background-color: #333;
+  color: #fff;
   padding: 20px;
 }
 
-#subframe_x h2 {
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+/* About me section styles */
+
+.about-me {
+  background-color: #f9f9f9;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.about-me img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 50%;
   margin-bottom: 20px;
 }
 
-#subframe_x ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+/* subframe_x styles */
+#subframe_x {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  overflow-y: scroll;
+  background-color: #fff;
+  padding: 30px;
 }
 
-#subframe_x ul li {
+#subframe_x h2 {
+  font-size: 28px;
+  margin-top: 0;
+}
+
+#subframe_x hr {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border: 0;
+  border-top: 1px solid #ccc;
+}
+
+#subframe_x p {
+  margin-bottom: 20px;
+}
+
+/* Project section styles */
+
+.project {
+  margin-bottom: 30px;
+}
+
+.project img {
+  max-width: 100%;
+  height: auto;
   margin-bottom: 10px;
 }
 
-#subframe_x form {
-  margin-top: 20px;
+.project h3 {
+  font-size: 24px;
+  margin-top: 0;
 }
 
+.project p {
+  margin-bottom: 10px;
+}
 
+/* Contact section styles */
 
+.contact {
+  margin-top: 30px;
+}
+
+.contact p {
+  margin-bottom: 20px;
+}
+
+.contact form input,
+.contact form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  resize: none;
+}
+
+.contact form button[type=submit] {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Minimalistic, sleek theme */
+
+body {
+  background-color: #fff;
+}
+
+header {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.about-me {
+  border-bottom: 1px solid #ccc;
+}
+
+.project {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.project:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.contact form input,
+.contact form textarea {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.contact form button[type=submit] {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Media queries */
+
+@media (max-width: 768px) {
+  .profile-pic {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+
+  .about-me {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .subframe {
+    height: auto;
+  }
+
+  .subframe-content {
+    padding: 0 10px;
+  }
+
+  .subframe h2 {
+    font-size: 24px;
+  }
+
+  .subframe p {
+    font-size: 16px;
+  }
+
+  .subframe .project-card {
+    margin-right: 0;
+    margin-bottom: 30px;
+  }
+
+  .subframe .project-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .subframe .project-card .card-body {
+    padding: 10px;
+  }
+
+  .subframe .project-card img {
+    height: 150px;
+    object-fit: cover;
+  }
+}
