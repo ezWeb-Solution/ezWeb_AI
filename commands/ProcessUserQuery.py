@@ -3,6 +3,7 @@ from UserStates import UserStates
 from commands.Command import Command
 from UserInfo import UserInfo
 import requests
+import json
 
 class ProcessUserQuery(Command):
 
@@ -17,7 +18,7 @@ class ProcessUserQuery(Command):
         self.user[UserInfo.CURRENT_WEBSITE_HTML] = {}
         self.get_html()
         self.get_css()
-        print("CSS: \n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"])
+        print("HTML: \n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"])
         print("CSS: \n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"])
         options = [[InlineKeyboardButton("Test out AI processes!", callback_data=UserStates.EDIT_WEBSITE)]]
         bot_response = "How can I help you today?"
@@ -31,4 +32,33 @@ class ProcessUserQuery(Command):
     def get_css(self):
         resp = requests.get("http://localhost:3000/html")
         self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"] = resp.text
+
+    def get_chat_gpt_response(self):
+        api_key = "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"
+        url = "https://api.openai.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+        prompt = "Generate an improved about me description for my personal portfolio page from:\n\n " + self.user[UserInfo.MANAGE_WEBSITE_ABOUT_ME]['desc']
+        data = {
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "system", "content": "You are a helpful assistant."},
+                         {"role": "user", "content": prompt}],
+            "temperature": 0.7,
+            "n": 1
+        }
+        #print(prompt)
+        response = requests.post(url,
+                                 headers=headers,
+                                 data=json.dumps(data))
+        print(response.status_code)
+        if response.status_code == 200:
+            response_data = json.loads(response.content)
+            #print(response_data)
+            resp = response_data['choices'][0]['message']['content']
+            #print(resp)
+            return resp
+        else:
+            return None
 
