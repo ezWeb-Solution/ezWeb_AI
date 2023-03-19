@@ -1,4 +1,4 @@
-import Parser
+from ezweb_parser.Parser import Parser
 from UserStates import UserStates
 from commands.EditWebsiteAICommand import EditWebsiteAICommand
 

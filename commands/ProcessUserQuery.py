@@ -19,6 +19,7 @@ class ProcessUserQuery(Command):
         self.get_html()
         self.get_css()
         self.bot.send_message(chat_id=self.chat_id, text="Generating...")
+        self.get_chat_gpt_response()
         print("HTML: \n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"])
         print("CSS: \n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"])
         options = [[InlineKeyboardButton("Test out AI processes!", callback_data=UserStates.EDIT_WEBSITE)]]
@@ -40,9 +41,9 @@ class ProcessUserQuery(Command):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
-        prompt = "I am going to give you one css file and one html file that work with one another. I am also (may be later) going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file. You will send me back the new html file and css file in the following format:"
+        prompt = "I am going to give you one css file and one html file that work with one another. I am also (may be later) going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file. Return the new html and css files directly to me. Do not write anything else in the response."
         prompt = prompt + "\n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] +\
-                        + "\n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
+                         "\n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [{"role": "system", "content": "You are a helpful assistant."},
@@ -57,7 +58,7 @@ class ProcessUserQuery(Command):
         print(response.status_code)
         if response.status_code == 200:
             response_data = json.loads(response.content)
-            #print(response_data)
+            print(response_data)
             resp = response_data['choices'][0]['message']['content']
             #print(resp)
             return resp

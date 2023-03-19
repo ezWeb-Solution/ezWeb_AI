@@ -1,8 +1,8 @@
 from telegram.ext import *
 import logging
 from commands.StartCommand import StartCommand
-from ezweb_parser import MessageParser
-from ezweb_parser import InlineQueryParser
+from ezweb_parser.MessageParser import MessageParser
+from ezweb_parser.InlineQueryParser import InlineQueryParser
 
 bot_token = "5880446535:AAGx1DuORcGOaY8YpXTYBnmvUjScmerhuwg"
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
