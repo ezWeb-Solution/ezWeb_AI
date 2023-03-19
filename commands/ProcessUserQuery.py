@@ -18,12 +18,12 @@ class ProcessUserQuery(Command):
         self.user[UserInfo.CURRENT_WEBSITE_HTML] = {}
         self.get_html()
         self.get_css()
+        self.bot.send_message(chat_id=self.chat_id, text="Generating...")
         print("HTML: \n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"])
         print("CSS: \n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"])
         options = [[InlineKeyboardButton("Test out AI processes!", callback_data=UserStates.EDIT_WEBSITE)]]
         bot_response = "How can I help you today?"
-        self.bot.send_message(chat_id=self.chat_id, text=bot_response,
-                              reply_markup=InlineKeyboardMarkup(options))
+        self.bot.send_message(chat_id=self.chat_id, text="Done!")
 
     def get_html(self):
         resp = requests.get("http://localhost:3000/html")
