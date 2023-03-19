@@ -40,7 +40,9 @@ class ProcessUserQuery(Command):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
-        prompt = "Generate an improved about me description for my personal portfolio page from:\n\n " + self.user[UserInfo.MANAGE_WEBSITE_ABOUT_ME]['desc']
+        prompt = "I am going to give you one css file and one html file that work with one another. I am also (may be later) going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file. You will send me back the new html file and css file in the following format:"
+        prompt = prompt + "\n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] +\
+                        + "\n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [{"role": "system", "content": "You are a helpful assistant."},
