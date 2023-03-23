@@ -44,19 +44,6 @@ class ProcessUserQuery(Command):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
-        prompt = """
-                I am going to give you IN MESSAGE TEXT FORMAT one css file and one html file that work with one another.
-                I am also going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file.
-                Return IN MESSAGE TEXT FORMAT the changes that should be made to the html and css files.
-                ONLY SEND ME THE LINES THAT I NEED TO CHANGE.
-                GIVE ME ONLY CODE. DO NOT SAY ANYTHING ELSE. FOLLOW EXACTLY THE BELOW FORMAT.
-
-                Example Response:
-                HTML file Line Number Range: 7-8
-                [Insert html code here] 
-                CSS file Line Number Range: 8-9
-                [Insert css code here]
-                """
 
         # prompt = self.message + "\n" + \
         #          prompt + "\n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
@@ -68,29 +55,23 @@ class ProcessUserQuery(Command):
         user_prompt =  self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
                 + "\n\n\nHERE IS THE LINE OF CODE TO SEARCH\n'" + self.message + "'"
         print(user_prompt)
-        # data = {
-        #     "model": "gpt-3.5-turbo",
-        #     "messages": [{"role": "system", "content": "You are a helpful assistant."},
-        #                  {"role": "user", "content": prompt}],
-        #     "temperature": 0.7,
-        #     "n": 1
-        # }
+
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [{"role": "system",
-                #           "content": """
-                # I am going to give you IN MESSAGE TEXT FORMAT one css file and one html file that work with one another.
-                # I am also going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file.
-                # Return IN MESSAGE TEXT FORMAT the changes that should be made to the html and css files.
-                # ONLY SEND ME THE LINES THAT I NEED TO CHANGE.
-                # GIVE ME ONLY CODE. DO NOT SAY ANYTHING ELSE. FOLLOW EXACTLY THE BELOW FORMAT.
-                #
-                # Example Response:
-                # [Exact line(s) of html code to replace]
-                # [Insert html code here]
-                # [Exact line(s) of css code to replace]
-                # [Insert css code here]
-                # """
+                          "content": """
+                I am going to give you IN MESSAGE TEXT FORMAT one css file and one html file that work with one another.
+                I am also going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file.
+                Return IN MESSAGE TEXT FORMAT the changes that should be made to the html and css files.
+                ONLY SEND ME THE LINES THAT I NEED TO CHANGE.
+                GIVE ME ONLY CODE. DO NOT SAY ANYTHING ELSE. FOLLOW EXACTLY THE BELOW FORMAT.
+
+                Example Response:
+                [Exact line(s) of html code to replace]
+                [Insert html code here]
+                [Exact line(s) of css code to replace]
+                [Insert css code here]
+                """,
                 "content": "I am going to give you a html file and a line of code. Give me the class where this line of code belongs to."},
                          {"role": "user", "content": user_prompt}],
             "temperature": 0.7,
@@ -106,18 +87,23 @@ class ProcessUserQuery(Command):
             #resp2 = response_data['choices'][1]['message']['content']
             print("Printing response: " + resp)
             html = self.process_html(resp)
-            css = self.process_css(resp)
+            #css = self.process_css(resp)
             print("HTML:\n\n" + html)
-            print("CSS:\n\n" + css)
+            # print("CSS:\n\n" + css)
 
             #response = requests.post('http://localhost:3000/uploadcss', data=css)
-            #response = requests.post('http://localhost:3000/uploadhtml', data=html)
+            response = requests.post('http://localhost:3000/uploadhtml', data=html)
         else:
             self.bot.send_message(chat_id=self.chat_id, text="Something went wrong..")
 
-    def process_html(self, html):
-        info = html.split("<!--HTML-->")
-        info = "<!--HTML-->" + info[1] + "<!--HTML-->"
+    def process_html(self, resp):
+        info = resp.split("id of old tag to attach the new tag under: ")
+        info = info.split("\nDELETE_ACTION")
+        add_content = info[0]
+        info = info[1].split("delete: ")
+        delete_content = info[1]
+        print("ADD: " + add_content)
+        print("DELETE: " + delete_content)
         return info
 
     def process_css(self, css):
