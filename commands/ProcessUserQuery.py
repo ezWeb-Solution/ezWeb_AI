@@ -109,7 +109,7 @@ class ProcessUserQuery(Command):
             elif curr.startswith(Delimiters.DELETE_ACTION):
                 start = counter + 1
                 end = counter + 1
-                while (end <= len(info)):
+                while (end < len(info)):
                     if info[end].startswith(Delimiters.ADD_ACTION) or info[end].startswith(Delimiters.DELETE_ACTION):
                         break
                     else:
