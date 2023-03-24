@@ -18,3 +18,8 @@ class InlineQueryParser(Parser):
             return RevertEditWebsiteAICommand(self.chat_id, self.bot, self.user)
         elif query == UserStates.EDIT_WEBSITE_KEEP_CHANGES:
             return StartCommand(self.chat_id, self.bot, self.user)
+        elif query == UserStates.EDIT_WEBSITE_GPT_PROMPTING_ABORT:
+            if self.user['state'] == UserStates.EDIT_WEBSITE_GPT_PROMPTING:
+                return AbortUserQueryCommand(self.chat_id, self.bot, self.user)
+            else:
+                self.bot.send_message(chat_id=self.chat_id, text="Nothing to be aborted. Press /start if you would like me to do something else")
