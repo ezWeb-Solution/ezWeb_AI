@@ -4,7 +4,8 @@ from commands.Command import Command
 from UserInfo import UserInfo
 import requests
 import json
-import openai
+from Delimiters import Delimiters
+from AIPrompts import AIPrompts
 
 class ProcessUserQuery(Command):
 
@@ -17,8 +18,10 @@ class ProcessUserQuery(Command):
     def execute(self):
         self.user[UserInfo.CURRENT_WEBSITE_CSS] = {}
         self.user[UserInfo.CURRENT_WEBSITE_HTML] = {}
+        self.user[UserInfo.PREV_WEBSITE_HTML] = {}
+        self.user[UserInfo.PREV_WEBSITE_CSS] = {}
         self.get_html()
-        self.get_css()
+        #self.get_css()
         self.bot.send_message(chat_id=self.chat_id, text="Generating...")
         self.get_chat_gpt_response()
         self.bot.send_message(chat_id=self.chat_id, text="Done!")
@@ -30,6 +33,7 @@ class ProcessUserQuery(Command):
     def get_html(self):
         resp = requests.get("http://localhost:3000/html")
         self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] = resp.text
+        self.user[UserInfo.PREV_WEBSITE_HTML]["file"] = resp.text
 
     def get_css(self):
         resp = requests.get("http://localhost:3000/style")
@@ -38,43 +42,25 @@ class ProcessUserQuery(Command):
     def get_chat_gpt_response(self):
         #api_key = "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"
         api_key = "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"
-        #openai.api_key = "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"
         url = "https://api.openai.com/v1/chat/completions"
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {api_key}"
         }
 
-        # prompt = self.message + "\n" + \
-        #          prompt + "\n" + self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
-        #          + "\n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
-        # user_prompt =  self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
-        #          + "\n" + self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"] \
-        #         + "Here is the html line of code to search:\n" + self.message
-
-        user_prompt =  self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
-                + "\n\n\nHERE IS THE LINE OF CODE TO SEARCH\n'" + self.message + "'"
+        user_prompt = self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] \
+                + "\n\n\nABOVE IS THE HTML FILE AND HERE ARE THE REQUESTED CHANGES\n'" + self.message + "'"
         print(user_prompt)
 
+        system_context = AIPrompts.EDIT_SYSTEM_CONTEXT
+        system_context += self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"]
         data = {
             "model": "gpt-3.5-turbo",
             "messages": [{"role": "system",
-                          "content": """
-                I am going to give you IN MESSAGE TEXT FORMAT one css file and one html file that work with one another.
-                I am also going to give you user inputs that want to change the content or appearance of the website, which you will do by changing the css file and the html file.
-                Return IN MESSAGE TEXT FORMAT the changes that should be made to the html and css files.
-                ONLY SEND ME THE LINES THAT I NEED TO CHANGE.
-                GIVE ME ONLY CODE. DO NOT SAY ANYTHING ELSE. FOLLOW EXACTLY THE BELOW FORMAT.
-
-                Example Response:
-                [Exact line(s) of html code to replace]
-                [Insert html code here]
-                [Exact line(s) of css code to replace]
-                [Insert css code here]
-                """,
-                "content": "I am going to give you a html file and a line of code. Give me the class where this line of code belongs to."},
-                         {"role": "user", "content": user_prompt}],
-            "temperature": 0.7,
+                          "content": system_context},
+                         {"role": "user",
+                          "content": user_prompt}],
+            "temperature": 0.3,
             "n": 1
         }
         response = requests.post(url,
@@ -84,27 +70,110 @@ class ProcessUserQuery(Command):
         if response.status_code == 200:
             response_data = json.loads(response.content)
             resp = response_data['choices'][0]['message']['content']
-            #resp2 = response_data['choices'][1]['message']['content']
             print("Printing response: " + resp)
-            html = self.process_html(resp)
+            self.process_html(resp)
+            new_html = self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"]
             #css = self.process_css(resp)
-            print("HTML:\n\n" + html)
+            print("New HTML:\n\n" + new_html)
             # print("CSS:\n\n" + css)
 
             #response = requests.post('http://localhost:3000/uploadcss', data=css)
-            response = requests.post('http://localhost:3000/uploadhtml', data=html)
+            response = requests.post('http://localhost:3000/uploadhtml', data=new_html)
         else:
             self.bot.send_message(chat_id=self.chat_id, text="Something went wrong..")
 
     def process_html(self, resp):
-        info = resp.split("id of old tag to attach the new tag under: ")
-        info = info.split("\nDELETE_ACTION")
-        add_content = info[0]
-        info = info[1].split("delete: ")
-        delete_content = info[1]
-        print("ADD: " + add_content)
-        print("DELETE: " + delete_content)
-        return info
+        info = resp.split("\n")
+        counter = 0
+        while(True):
+            if counter >= len(info):
+                break
+            curr = info[counter]
+            print(curr)
+            if curr.startswith(Delimiters.ADD_ACTION):
+                start = counter + 1
+                end = counter + 1
+                while (end < len(info)):
+                    if info[end].startswith(Delimiters.ADD_ACTION) or info[end].startswith(Delimiters.DELETE_ACTION):
+                        break
+                    else:
+                        end += 1
+                if (end == start + 1):
+                    counter += 1
+                    continue
+                full_query = ""
+                for i in range(start, end):
+                    full_query += (info[i] + '\n')
+                self.process_add_query(full_query)
+                counter = end
+            elif curr.startswith(Delimiters.DELETE_ACTION):
+                start = counter + 1
+                end = counter + 1
+                while (end <= len(info)):
+                    if info[end].startswith(Delimiters.ADD_ACTION) or info[end].startswith(Delimiters.DELETE_ACTION):
+                        break
+                    else:
+                        end += 1
+                if (end == start + 1):
+                    counter += 1
+                    continue
+                full_query = ""
+                for i in range(start, end):
+                    full_query += (info[i] + '\n')
+                self.process_delete_query(full_query)
+                counter = end
+            else:
+                counter += 1
+        print("Done!")
+
+    def process_add_query(self, full_query):
+        to_process = full_query.split("\n")
+        line_target = -1
+        new_content = ""
+        for i in range(len(to_process)):
+            if to_process[i] == Delimiters.ADD_ACTION:
+                continue
+            elif to_process[i].startswith(Delimiters.ADD_ACTION_ID):
+                line_target = int(to_process[i].split(Delimiters.ADD_ACTION_ID)[1].strip())
+            elif to_process[i].startswith(Delimiters.ADD_ACTION_CONTENT):
+                new_content = to_process[i].split(Delimiters.ADD_ACTION_CONTENT)[1]
+        self.add_html(line_target, new_content)
+
+    def add_html(self, id, new_content):
+        html_file = self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"]
+        output = ""
+        to_check = 'id="' + str(id) + '"'
+        html_lines = html_file.split("\n")
+        for line in html_lines:
+            if to_check in line:
+                output += (line + "\n")
+                output += (new_content + "\n")
+            else:
+                output += (line + "\n")
+        self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] = output
+
+    def process_delete_query(self, full_query):
+        to_process = full_query.split("\n")
+        line_target = -1
+        for i in range(len(to_process)):
+            if to_process[i] == Delimiters.DELETE_ACTION:
+                continue
+            elif to_process[i].startswith(Delimiters.DELETE_ACTION_ID):
+                line_target = int(to_process[i].split(Delimiters.DELETE_ACTION_ID)[1].strip())
+        self.delete_html(line_target)
+
+    def delete_html(self, id):
+        html_file = self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"]
+        output = ""
+        to_check = 'id="' + str(id) + '"'
+        html_lines = html_file.split("\n")
+        for line in html_lines:
+            if to_check in line:
+                continue
+            else:
+                output += line + "\n"
+        self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"] = output
+
 
     def process_css(self, css):
         info = css.split("/*$CSS*/")

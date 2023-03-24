@@ -1,0 +1,7 @@
+class Delimiters:
+
+    ADD_ACTION = "ADD_ACTION"
+    DELETE_ACTION = "DELETE_ACTION"
+    ADD_ACTION_ID = "$$INSERT_UNDER_ID: "
+    DELETE_ACTION_ID = "$$ID: "
+    ADD_ACTION_CONTENT = "$$CONTENT: "

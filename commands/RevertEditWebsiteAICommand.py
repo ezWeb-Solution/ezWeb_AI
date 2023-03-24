@@ -2,6 +2,7 @@ from commands.Command import Command
 from UserStates import UserStates
 import requests
 from UserInfo import UserInfo
+from commands.StartCommand import StartCommand
 
 class RevertEditWebsiteAICommand(Command):
 
@@ -11,10 +12,10 @@ class RevertEditWebsiteAICommand(Command):
         self.user = user
 
     def execute(self):
-        self.user['state'] = UserStates.EDIT_WEBSITE
-        bot_response = "How do you want to edit the website?"
+        bot_response = "Reverting.."
         self.bot.send_message(chat_id=self.chat_id, text=bot_response)
-        old_css = self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
-        old_html = self.user[UserInfo.CURRENT_WEBSITE_HTML]["file"]
-        response = requests.post('http://localhost:3000/uploadcss', data=old_css)
+        #old_css = self.user[UserInfo.CURRENT_WEBSITE_CSS]["file"]
+        old_html = self.user[UserInfo.PREV_WEBSITE_HTML]["file"]
+        #response = requests.post('http://localhost:3000/uploadcss', data=old_css)
         response = requests.post('http://localhost:3000/uploadhtml', data=old_html)
+        return StartCommand(self.chat_id, self.bot, self.user).execute()

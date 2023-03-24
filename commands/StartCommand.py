@@ -10,6 +10,7 @@ class StartCommand(Command):
         self.user = user
 
     def execute(self):
+        self.user = {}
         self.user['state'] = UserStates.START
         options = [[InlineKeyboardButton("Test out AI processes!", callback_data=UserStates.EDIT_WEBSITE)]]
         bot_response = "How can I help you today?"
