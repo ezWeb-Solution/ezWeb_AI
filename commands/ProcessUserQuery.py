@@ -22,7 +22,9 @@ class ProcessUserQuery(Command):
         self.user[UserInfo.PREV_WEBSITE_CSS] = {}
         self.get_html()
         #self.get_css()
-        self.bot.send_message(chat_id=self.chat_id, text="Generating...")
+        self.user['state'] = UserStates.EDIT_WEBSITE_GPT_PROMPTING
+        option_to_cancel = [[InlineKeyboardButton("Abort", callback_data=UserStates.EDIT_WEBSITE_GPT_PROMPTING_ABORT)]]
+        self.bot.send_message(chat_id=self.chat_id, text="Generating...", reply_markup=InlineKeyboardMarkup(option_to_cancel))
         self.get_chat_gpt_response()
         self.bot.send_message(chat_id=self.chat_id, text="Done!")
         self.user['state'] = UserStates.EDIT_WEBSITE_COMPLETED
