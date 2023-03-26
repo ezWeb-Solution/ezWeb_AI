@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
       }
     });
   } else if (req.method === 'GET' && req.url === '/html') {
-    const cssFilePath = path.join(__dirname, 'home.html');
+    const cssFilePath = path.join(__dirname, 'src/index.html');
 
     fs.readFile(cssFilePath, (err, data) => {
       if (err) {
@@ -51,7 +51,7 @@ const server = http.createServer((req, res) => {
     });
 
     req.on('end', () => {
-      const cssFilePath = path.join(__dirname, 'home.html');
+      const cssFilePath = path.join(__dirname, 'src/index.html');
       fs.writeFile(cssFilePath, body, (err) => {
         if (err) {
           res.statusCode = 500;
